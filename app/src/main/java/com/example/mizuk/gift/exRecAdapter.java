@@ -1,22 +1,32 @@
 package com.example.mizuk.gift;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Interpolator;
 import android.widget.ImageView;
 
 import java.util.ArrayList;
+import java.util.List;
 
-public class exRecAdapter extends RecyclerView.Adapter<exRecAdapter.exViewHolder> {
+public class exRecAdapter extends RecyclerView.Adapter<exRecAdapter.exViewHolder>  implements View.OnClickListener{
     private ArrayList<imageItem> list;
-    private Context context;
-
-    public exRecAdapter(Context context, ArrayList<imageItem> list) {
+    private MainActivity context;
+    RecyclerView recyclerView;
+    private OnItemClickListener mOnItemClickListener = null;
+    public static interface OnItemClickListener {
+        void onItemClick(View view , int position);
+    }
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        this.mOnItemClickListener = listener;
+    }
+    RecyclerView.Adapter<exRecAdapter.exViewHolder> a=this;
+    public exRecAdapter(MainActivity context,RecyclerView recyclerView, ArrayList<imageItem> list) {
         //this.list=list;
+        this.recyclerView=recyclerView;
         this.list = new ArrayList<>();
         this.context = context;
         notifyDataSetChanged();
@@ -28,7 +38,21 @@ public class exRecAdapter extends RecyclerView.Adapter<exRecAdapter.exViewHolder
         notifyItemInserted(position);
         Log.v("siz", "" + list.size());
     }
+    public void change(Bitmap img,Bitmap ixmg,int position)
+    {
+        imageItem item=list.get(position);
 
+        if(item.state==true)
+        {
+            item.state=false;
+            item.img=ixmg;
+        }
+        else {
+            item.state = true;
+            item.img = img;
+        }
+        notifyItemChanged(position);
+    }
     public void remove() {
         int position=list.size()-1;
         list.remove(position);
@@ -38,6 +62,7 @@ public class exRecAdapter extends RecyclerView.Adapter<exRecAdapter.exViewHolder
     @Override
     public exViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.recycler_view_content, parent, false);
+        view.setOnClickListener(this);
         return new exViewHolder(view);
     }
 
@@ -45,6 +70,10 @@ public class exRecAdapter extends RecyclerView.Adapter<exRecAdapter.exViewHolder
     public void onBindViewHolder(exViewHolder holder, int position) {
         holder.position = position;
         holder.imgView.setImageBitmap(list.get(position).getImg());
+        if(position==getItemCount()-1)
+        {
+            context.loadMore();
+        }
     }
 
     @Override
@@ -57,9 +86,15 @@ public class exRecAdapter extends RecyclerView.Adapter<exRecAdapter.exViewHolder
         return list.size();
     }
 
+    @Override
+    public void onClick(View v) {
+        if (mOnItemClickListener != null) {
+            //注意这里使用getTag方法获取position
+            mOnItemClickListener.onItemClick(v,recyclerView.getChildViewHolder(v).getAdapterPosition());
+        }
+    }
 
-
-    public static class exViewHolder extends RecyclerView.ViewHolder {
+    class exViewHolder extends RecyclerView.ViewHolder {
         public ImageView imgView;
         public int position;
 
@@ -67,5 +102,6 @@ public class exRecAdapter extends RecyclerView.Adapter<exRecAdapter.exViewHolder
             super(parentView);
             imgView = parentView.findViewById(R.id.img);
         }
+
     }
 }
