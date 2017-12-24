@@ -20,6 +20,7 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.LayoutAnimationController;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import junit.framework.Assert;
@@ -27,6 +28,10 @@ import junit.framework.Assert;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+
+import jp.wasabeef.recyclerview.adapters.SlideInLeftAnimationAdapter;
+import jp.wasabeef.recyclerview.animators.SlideInDownAnimator;
+import jp.wasabeef.recyclerview.animators.SlideInLeftAnimator;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -71,12 +76,18 @@ public class MainActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.rec_view);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
+
+        recyclerView.setItemAnimator(new SlideInLeftAnimator());
+        recyclerView.getItemAnimator().setAddDuration(1000);
+        recyclerView.getItemAnimator().setRemoveDuration(1000);
+        recyclerView.getItemAnimator().setMoveDuration(1000);
+        recyclerView.getItemAnimator().setChangeDuration(1000);
         adapter = new exRecAdapter(this, list);
-        DefaultItemAnimator animator = new DefaultItemAnimator();
-        animator.setAddDuration(2000);
-        recyclerView.setItemAnimator(new DefaultItemAnimator());
-        recyclerView.setAdapter(adapter);
-        //adapter.add(list.get(0));
+        SlideInLeftAnimationAdapter slideInLeftAnimationAdapter=new SlideInLeftAnimationAdapter(adapter);
+        slideInLeftAnimationAdapter.setFirstOnly(false);
+        recyclerView.setAdapter(slideInLeftAnimationAdapter);
+        for(int i=0;i<list.size();i++)
+            adapter.add(list.get(i));
 
     }
 
@@ -95,65 +106,6 @@ public class MainActivity extends AppCompatActivity {
         }
         Log.v("dataLoad", "" + list.size());
     }
-
-    class exRecAdapter extends RecyclerView.Adapter<exViewHolder> {
-        private ArrayList<imageItem> list;
-        private Context context;
-
-        public exRecAdapter(Context context, ArrayList<imageItem> list) {
-            //this.list=list;
-            this.list = new ArrayList<>();
-            this.context = context;
-            notifyDataSetChanged();
-        }
-
-        public void add(imageItem item) {
-            list.add(0,item);
-            if(list.size()==1)
-                notifyDataSetChanged();
-            else
-                notifyItemInserted(0);
-            Log.v("siz", "" + list.size());
-        }
-
-        public void remove() {
-            list.remove(list.size() - 1);
-            notifyDataSetChanged();
-        }
-
-        @Override
-        public exViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(context).inflate(R.layout.recycler_view_content, parent, false);
-            group = parent;
-            return new exViewHolder(view);
-        }
-
-        @Override
-        public void onBindViewHolder(exViewHolder holder, int position) {
-            holder.position = position;
-            holder.imgView.setImageBitmap(list.get(position).getImg());
-        }
-
-        @Override
-        public int getItemViewType(int position) {
-            return super.getItemViewType(position);
-        }
-
-        @Override
-        public int getItemCount() {
-            return list.size();
-        }
-    }
-
-    private class exViewHolder extends RecyclerView.ViewHolder {
-        public ImageView imgView;
-        public int position;
-
-        public exViewHolder(View parentView) {
-            super(parentView);
-            imgView = parentView.findViewById(R.id.img);
-        }
-    }
 }
 
 class imageItem {
@@ -165,33 +117,5 @@ class imageItem {
 
     public Bitmap getImg() {
         return img;
-    }
-}
-
-class exRecyclerView extends RecyclerView {
-
-    public exRecyclerView(Context context) {
-        super(context);
-    }
-    public exRecyclerView(Context context, @Nullable AttributeSet attrs) {
-        super(context, attrs);
-    }
-
-    public exRecyclerView(Context context, @Nullable AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
-    }
-    @Override
-    protected void attachLayoutAnimationParameters(View child, ViewGroup.LayoutParams params, int index, int count) {
-
-        LayoutAnimationController.AnimationParameters animationParameters = (LayoutAnimationController.AnimationParameters) params.layoutAnimationParameters;
-        if (animationParameters == null) {
-            AlphaAnimation alphaAnimation = new AlphaAnimation(0, 1);
-            alphaAnimation.setDuration(1000);
-            animationParameters = new LayoutAnimationController.AnimationParameters();
-            params.layoutAnimationParameters = animationParameters;
-        }
-        animationParameters.count = count;
-        animationParameters.index = index;
-
     }
 }
